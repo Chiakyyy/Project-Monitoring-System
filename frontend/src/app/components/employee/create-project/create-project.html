@@ -1,0 +1,102 @@
+<div class="container mt-4 mb-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4><i class="bi bi-file-earmark-plus"></i> Nouveau Cahier de Charges (CPS)</h4>
+        </div>
+
+        <div class="card-body">
+            <form (ngSubmit)="onSubmit()">
+
+                <h5 class="text-primary border-bottom pb-2">1. Définition du Besoin</h5>
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label">Titre du Projet</label>
+                        <input type="text" class="form-control" [(ngModel)]="project.title" name="title" required
+                            placeholder="Ex: Renouvellement Parc Info">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Budget Estimé (€)</label>
+                        <input type="number" class="form-control" [(ngModel)]="project.budget" name="budget" required>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Objectif Global</label>
+                        <textarea class="form-control" rows="2" [(ngModel)]="project.objective" name="objective"
+                            required></textarea>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-paperclip"></i> Fichier Cahier de Charge (.txt/PDF)
+                        </label>
+                        <input type="file" class="form-control" (change)="onFileSelected($event)"
+                            accept=".txt,.pdf,.doc">
+                        <div class="form-text">Ce fichier contient tous les détails requis (Source 7).</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Matériel Requis</label>
+                        <textarea class="form-control" [(ngModel)]="project.hardware" name="hardware"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Licences Logiciel</label>
+                        <textarea class="form-control" [(ngModel)]="project.licenses" name="licenses"></textarea>
+                    </div>
+                </div>
+
+                <h5 class="text-primary border-bottom pb-2 mt-4 d-flex justify-content-between">
+                    2. Planification des Tâches
+                    <button type="button" class="btn btn-sm btn-success" (click)="addTask()">
+                        <i class="bi bi-plus-circle"></i> Ajouter Tâche
+                    </button>
+                </h5>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Titre Tâche</th>
+                                <th>Description</th>
+                                <th style="width: 100px;">Durée (j)</th>
+                                <th>Deadline</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let task of tasks; let i = index">
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" [(ngModel)]="task.title"
+                                        [name]="'tTitle'+i" required>
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm"
+                                        [(ngModel)]="task.description" [name]="'tDesc'+i">
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm"
+                                        [(ngModel)]="task.duration" [name]="'tDur'+i">
+                                </td>
+                                <td>
+                                    <input type="date" class="form-control form-control-sm" [(ngModel)]="task.deadline"
+                                        [name]="'tDead'+i" required>
+                                </td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeTask(i)"
+                                        *ngIf="tasks.length > 1">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-circle-fill"></i> Soumettre le Projet
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,219 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-speedometer2"></i> Tableau de Bord</h2>
+
+        <a routerLink="/manager/validation" class="btn btn-outline-primary">
+            <i class="bi bi-list-check"></i> Valider les Projets
+        </a>
+    </div>
+
+    <div *ngIf="isLoading" class="text-center my-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p>Chargement des données...</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="alert alert-danger text-center m-4">
+        {{ errorMessage }}
+    </div>
+
+    <div *ngIf="!isLoading">
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Budget Total Estimé</h5>
+                        <p class="card-text fs-3">{{ stats?.total_budget | currency:'EUR' }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Projets Validés</h5>
+                        <p class="card-text fs-3">
+                            {{ getProjectCount('ACCEPTED') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-warning mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Projets En Attente</h5>
+                        <p class="card-text fs-3">
+                            {{ getProjectCount('PENDING') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <i class="bi bi-bar-chart-fill text-primary"></i> Statistiques Graphiques
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+
+                            <div class="col-md-4 text-center">
+                                <h6>Répartition par Statut</h6>
+                                <div style="display: block;" *ngIf="isBrowser">
+                                    <canvas baseChart [data]="pieChartData" [type]="'pie'">
+                                    </canvas>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 text-center border-start border-end">
+                                <h6>Performance par Employé</h6>
+                                <div style="display: block;" *ngIf="isBrowser">
+                                    <canvas baseChart [data]="barChartData" [type]="'bar'">
+                                    </canvas>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 text-center">
+                                <h6>Évolution des Projets</h6>
+                                <div style="display: block;" *ngIf="isBrowser">
+                                    <canvas baseChart [data]="lineChartData" [type]="'line'">
+                                    </canvas>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-danger text-white">
+                        <i class="bi bi-bell-fill"></i> Alertes Délais (< 15 Jours) </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush" *ngIf="notifications.length > 0; else noAlerts">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                        *ngFor="let notif of notifications">
+                                        <div>
+                                            <strong>{{ notif.title }}</strong><br>
+                                            <small class="text-muted">Deadline: {{ notif.deadline | date }}</small>
+                                        </div>
+                                        <span class="badge bg-danger rounded-pill">Urgent</span>
+                                    </li>
+                                </ul>
+                                <ng-template #noAlerts>
+                                    <p class="text-muted text-center mt-3">Aucune alerte pour le moment.</p>
+                                </ng-template>
+                            </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header bg-primary text-white">
+                            <i class="bi bi-list-task"></i> Détails des Tâches & Avis
+                        </div>
+                        <div class="card-body p-0">
+
+                            <div class="accordion accordion-flush" id="accordionTasks">
+
+                                <div class="accordion-item" *ngFor="let task of detailedTasks; let i = index">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button"
+                                            data-bs-toggle="collapse" [attr.data-bs-target]="'#flush-collapse' + i">
+                                            <div class="d-flex w-100 justify-content-between align-items-center me-3">
+                                                <span>
+                                                    <strong>{{ task.title }}</strong>
+                                                    <br><small class="text-muted">{{ task.project_title }}</small>
+                                                </span>
+                                                <span class="badge" [ngClass]="{
+                        'bg-success': task.status === 'VALIDATED',
+                        'bg-primary': task.status === 'IN_PROGRESS',
+                        'bg-warning': task.status === 'WAITING',
+                        'bg-danger': task.status === 'NOT_VALIDATED'
+                      }">
+                                                    {{ task.status }}
+                                                </span>
+                                            </div>
+                                        </button>
+                                    </h2>
+
+                                    <div [id]="'flush-collapse' + i" class="accordion-collapse collapse"
+                                        data-bs-parent="#accordionTasks">
+                                        <div class="accordion-body bg-light">
+
+                                            <h6 class="text-primary border-bottom pb-1 mb-2">Commentaires</h6>
+                                            <div *ngIf="task.relatedComments.length > 0; else noComments">
+                                                <div *ngFor="let c of task.relatedComments"
+                                                    class="mb-2 p-2 bg-white rounded shadow-sm border-start border-4"
+                                                    [ngClass]="{
+                       'border-danger': c.type === 'URGENT', 
+                       'border-info': c.type === 'DAILY', 
+                       'border-success': c.type === 'INFORMATIVE'
+                     }">
+                                                    <div class="d-flex justify-content-between">
+                                                        <strong>{{ c.full_name }}</strong>
+                                                        <span class="badge rounded-pill text-bg-light border">{{ c.type
+                                                            }}</span>
+                                                    </div>
+                                                    <p class="mb-0 small text-muted">{{ c.content }}</p>
+                                                </div>
+                                            </div>
+                                            <ng-template #noComments><small class="text-muted fst-italic">Aucun
+                                                    commentaire.</small></ng-template>
+
+                                            <h6 class="text-primary border-bottom pb-1 mb-2 mt-3">Avis des Pairs
+                                                (Employés)</h6>
+                                            <div *ngIf="task.relatedApprovals.length > 0; else noVotes">
+                                                <ul class="list-group list-group-flush small">
+                                                    <li class="list-group-item bg-transparent d-flex justify-content-between"
+                                                        *ngFor="let a of task.relatedApprovals">
+                                                        <span>{{ a.full_name }}</span>
+                                                        <span class="badge"
+                                                            [ngClass]="a.is_approved ? 'bg-success' : 'bg-danger'">
+                                                            <i class="bi"
+                                                                [ngClass]="a.is_approved ? 'bi-check-lg' : 'bi-x-lg'"></i>
+                                                            {{ a.is_approved ? 'Validé' : 'Non pertinent' }}
+                                                        </span>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <ng-template #noVotes><small class="text-muted fst-italic">Aucun vote pour
+                                                    l'instant.</small></ng-template>
+
+                                            <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+
+                                                <button *ngIf="task.status !== 'VALIDATED'"
+                                                    class="btn btn-sm btn-success"
+                                                    (click)="managerValidateTask(task, 'VALIDATED')">
+                                                    <i class="bi bi-check-circle"></i> Valider
+                                                </button>
+
+                                                <button *ngIf="task.status === 'VALIDATED'"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    (click)="managerValidateTask(task, 'NOT_VALIDATED')">
+                                                    <i class="bi bi-x-circle"></i> Invalider
+                                                </button>
+
+                                                <button *ngIf="task.status === 'WAITING'"
+                                                    class="btn btn-sm btn-outline-primary"
+                                                    (click)="managerValidateTask(task, 'IN_PROGRESS')">
+                                                    <i class="bi bi-play-circle"></i> Lancer
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
