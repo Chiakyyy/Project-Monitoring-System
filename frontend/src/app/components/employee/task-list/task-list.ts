@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core'; //
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../services/api';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 
 @Component({
   selector: 'app-task-list',
@@ -17,14 +17,19 @@ export class TaskListComponent implements OnInit {
   selectedTask: any = null;
   newComment = { content: '', type: 'INFORMATIVE' };
 
-  // ==================== MODERN INJECTION FIX ====================
-  // Instead of the constructor, we use inject(). 
-  // This guarantees 'this.cd' and 'this.api' are available immediately.
   private api = inject(ApiService);
   private cd = inject(ChangeDetectorRef);
-  // ==============================================================
+  private router = inject(Router);
+
+  // Get Current User
+  currentUser = this.api.getCurrentUser();
 
   ngOnInit() {
+    // Safety redirect if not logged in
+    if (!this.currentUser) {
+      this.router.navigate(['/login']);
+      return;
+    }
     this.loadTasks();
   }
 
@@ -32,7 +37,6 @@ export class TaskListComponent implements OnInit {
     this.api.getAllTasks().subscribe({
       next: (data) => {
         this.tasks = data;
-        // This will strictly force the UI to paint the cards
         this.cd.detectChanges();
       },
       error: (err) => console.error(err)
@@ -42,7 +46,7 @@ export class TaskListComponent implements OnInit {
   voteTask(task: any, isApproved: boolean) {
     const payload = {
       task_id: task.id,
-      user_id: 2,
+      user_id: this.currentUser.id,
       is_approved: isApproved ? 1 : 0
     };
 
@@ -67,7 +71,7 @@ export class TaskListComponent implements OnInit {
 
     const payload = {
       task_id: this.selectedTask.id,
-      user_id: 2,
+      user_id: this.currentUser.id,
       content: this.newComment.content,
       type: this.newComment.type
     };

@@ -1,15 +1,52 @@
 <div class="container d-flex justify-content-center align-items-center vh-100 bg-light">
-    <div class="card shadow p-4" style="width: 400px;">
-        <h3 class="text-center mb-4">Suivi des Marchés</h3>
+    <div class="card shadow p-4 border-0" style="width: 400px;">
 
-        <div class="d-grid gap-2">
-            <button class="btn btn-primary" (click)="login('CHEF')">
-                <i class="bi bi-person-badge-fill"></i> Connexion Chef de Service
-            </button>
+        <div class="text-center mb-4">
+            <h1 class="h3 mb-3 font-weight-normal text-primary">
+                <i class="bi bi-shield-lock-fill"></i> Connexion
+            </h1>
+            <p class="text-muted">Système de Suivi des Marchés</p>
+        </div>
 
-            <button class="btn btn-success" (click)="login('EMPLOYEE')">
-                <i class="bi bi-person-workspace"></i> Connexion Employé
-            </button>
+        <form (ngSubmit)="onLogin()">
+            <!-- Email Input -->
+            <div class="mb-3">
+                <label for="email" class="form-label">Adresse Email</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                    <input type="email" class="form-control" id="email" [(ngModel)]="credentials.email" name="email"
+                        required placeholder="ex: ahmed@entreprise.com">
+                </div>
+            </div>
+
+            <!-- Password Input -->
+            <div class="mb-3">
+                <label for="password" class="form-label">Mot de passe</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-key"></i></span>
+                    <input type="password" class="form-control" id="password" [(ngModel)]="credentials.password"
+                        name="password" required placeholder="******">
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="errorMessage" class="alert alert-danger py-2 small">
+                <i class="bi bi-exclamation-triangle-fill"></i> {{ errorMessage }}
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-primary">
+                    Se Connecter
+                </button>
+            </div>
+
+        </form>
+
+        <div class="mt-4 text-center small text-muted border-top pt-3">
+            <p class="mb-1">Comptes de test (Mot de passe: <strong>password123</strong>) :</p>
+            <div>Chef: chef@entreprise.com</div>
+            <div>Employé: sarah@entreprise.com</div>
         </div>
     </div>
 </div>

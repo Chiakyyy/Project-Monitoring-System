@@ -4,6 +4,10 @@ const router = express.Router();
 const projectCtrl = require('../controllers/projectController');
 const taskCtrl = require('../controllers/taskController');
 const statsCtrl = require('../controllers/statsController');
+const authCtrl = require('../controllers/authController');
+
+// Auth Routes
+router.post('/login', authCtrl.login);
 
 // Project Routes
 router.post('/projects', projectCtrl.createProject);

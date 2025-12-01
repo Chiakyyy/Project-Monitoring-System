@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,28 +13,29 @@ import { ApiService } from '../../../services/api';
 })
 export class CreateProjectComponent {
 
+  private api = inject(ApiService);
+  private router = inject(Router);
+
+  // Get User from Session
+  currentUser = this.api.getCurrentUser();
+
   project = {
     title: '',
     objective: '',
     budget: 0,
     hardware: '',
     licenses: '',
-    creator_id: 2, // Hardcoded for demo
-    file_path: ''  // <--- NEW: To store the file name
+    creator_id: this.currentUser ? this.currentUser.id : 0,
+    file_path: ''
   };
 
   tasks: any[] = [
     { title: '', description: '', duration: 1, deadline: '' }
   ];
 
-  constructor(private api: ApiService, private router: Router) { }
-
-  // <--- NEW: Handle File Selection
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      // In a real app, you would upload this to a server.
-      // For this prototype, we just save the fake path/name to satisfy the DB.
       this.project.file_path = '/uploads/' + file.name;
     }
   }
@@ -48,18 +49,17 @@ export class CreateProjectComponent {
   }
 
   onSubmit() {
+    // Safety check
+    if (!this.currentUser) {
+      alert("Session expirée, veuillez vous reconnecter.");
+      this.router.navigate(['/login']);
+      return;
+    }
+
     this.api.createProject(this.project).subscribe({
       next: (res: any) => {
-        // FIX: Ensure we grab 'res.id' (which we just added to the backend)
         const projectId = res.id;
-        console.log('New Project ID:', projectId);
 
-        if (!projectId) {
-          alert('Erreur: ID du projet manquant');
-          return;
-        }
-
-        // Loop and Save Tasks with the correct Project ID
         this.tasks.forEach(task => {
           const taskData = { ...task, project_id: projectId };
           this.api.addTask(taskData).subscribe();
